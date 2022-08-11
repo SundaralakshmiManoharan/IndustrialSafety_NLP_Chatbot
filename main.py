@@ -78,7 +78,7 @@ from keras.models import load_model
 import json
 from streamlit_option_menu import option_menu
 spacy.cli.download("en")
-
+from spacy.lang.en.examples import sentences 
 from sklearn.metrics import (
     precision_score, 
     recall_score, 
