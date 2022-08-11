@@ -443,7 +443,7 @@ def predict_potential_accident_level(inputText, model, binarizer):
         pred_critical_risk = np.array_str(pred_critical_risk) if len(pred_critical_risk[is_present]) else ''
     return pred_acc_lvl, pred_critical_risk
 
-
+file_location="Data/IHMStefanini_industrial_safety_and_health_database_with_accidents_description.xlsx"
 
 with st.sidebar:
     selected = option_menu(menu_title = 'Main Menu',
@@ -570,7 +570,7 @@ with st.sidebar:
         with EDA:
             
            
-            df_ind_acc = pd.read_excel("IHMStefanini_industrial_safety_and_health_database_with_accidents_description.xlsx")
+            df_ind_acc = pd.read_excel(file_location)
             df_ind_acc.pop("Unnamed: 0")
             df_ind_acc = process_attributes(df_ind_acc)
             df_ind_acc['description_processed'] = df_ind_acc["description"].apply(preprocess_text)
@@ -801,7 +801,7 @@ with st.sidebar:
     
         with NLP:
             
-            df_ind_acc = pd.read_excel("IHMStefanini_industrial_safety_and_health_database_with_accidents_description.xlsx")
+            df_ind_acc = pd.read_excel(file_location)
             df_ind_acc.pop("Unnamed: 0")
             df_ind_acc = process_attributes(df_ind_acc)
             df_ind_acc['description_processed'] = df_ind_acc["description"].apply(preprocess_text)
@@ -850,7 +850,7 @@ with st.sidebar:
     
         with download:
             
-            df_ind_acc = pd.read_excel("IHMStefanini_industrial_safety_and_health_database_with_accidents_description.xlsx")
+            df_ind_acc = pd.read_excel(file_location)
             df_ind_acc.pop("Unnamed: 0")
             df_ind_acc = process_attributes(df_ind_acc)
             df_ind_acc['description_processed'] = df_ind_acc["description"].apply(preprocess_text)
@@ -882,7 +882,7 @@ with st.sidebar:
              ('Do not want to run','Yes', 'No'))
         
                     if genre == 'Yes':
-                        df_ind_acc = pd.read_excel("IHMStefanini_industrial_safety_and_health_database_with_accidents_description.xlsx")
+                        df_ind_acc = pd.read_excel(file_location)
                         df_ind_acc.pop("Unnamed: 0")
                         df_ind_acc = process_attributes(df_ind_acc)
                         df_ind_acc['description_processed'] = df_ind_acc["description"].apply(preprocess_text)
@@ -1115,7 +1115,7 @@ with st.sidebar:
                 
             if genre1 == 'Yes':      
                 
-                df_ind_acc = pd.read_excel("IHMStefanini_industrial_safety_and_health_database_with_accidents_description.xlsx")
+                df_ind_acc = pd.read_excel(file_location)
                 df_ind_acc.pop("Unnamed: 0")
                 df_ind_acc = process_attributes(df_ind_acc)
                 df_ind_acc['description_processed'] = df_ind_acc["description"].apply(preprocess_text)
@@ -1464,7 +1464,7 @@ with st.sidebar:
                 st.title("Bot: This is Bot! Your Personal Assistant. If you want to exit, type end \n\n")  
                 
                            
-                df_ind_acc = pd.read_excel("IHMStefanini_industrial_safety_and_health_database_with_accidents_description.xlsx")
+                df_ind_acc = pd.read_excel(file_location)
                 df_ind_acc.pop("Unnamed: 0")
                 df_ind_acc = process_attributes(df_ind_acc)
                 df_ind_acc['description_processed'] = df_ind_acc["description"].apply(preprocess_text)
@@ -1556,8 +1556,7 @@ with st.sidebar:
                     st.write("Please re-phrase your query!")
                 else:
                     st.header("PAGGS-Bot response is as below:")
-                    st.write(chatbot_response(user_input))
-                   
+                    st.write(chatbot_response(user_input))  
     
 
     
