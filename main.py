@@ -77,7 +77,7 @@ from keras.models import load_model
 #from chatterbot.trainers import ChatterBotCorpusTrainer 
 import json
 from streamlit_option_menu import option_menu
-spacy.cli.download("en")
+
 from spacy.lang.en.examples import sentences 
 from sklearn.metrics import (
     precision_score, 
@@ -92,7 +92,7 @@ nltk.download('omw-1.4')
 nltk.download('stopwords')
 nltk.download('wordnet')
 tqdm.pandas(desc="status")
-
+spacy.cli.download("en")
 st.set_page_config(layout='wide', page_title = 'Industrial safety NLP based Chatbot')
 st.set_option('deprecation.showPyplotGlobalUse', False)
 
