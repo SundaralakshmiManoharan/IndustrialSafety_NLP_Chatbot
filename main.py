@@ -77,7 +77,7 @@ from keras.models import load_model
 #from chatterbot.trainers import ChatterBotCorpusTrainer 
 import json
 from streamlit_option_menu import option_menu
-
+spacy.cli.download("en")
 
 from sklearn.metrics import (
     precision_score, 
