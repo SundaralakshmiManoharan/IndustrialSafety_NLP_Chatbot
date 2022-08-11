@@ -87,7 +87,11 @@ from sklearn.metrics import (
     accuracy_score
 )
 
-
+nltk.download('punkt')
+nltk.download('omw-1.4')
+nltk.download('stopwords')
+nltk.download('wordnet')
+tqdm.pandas(desc="status")
 
 st.set_page_config(layout='wide', page_title = 'Industrial safety NLP based Chatbot')
 st.set_option('deprecation.showPyplotGlobalUse', False)
