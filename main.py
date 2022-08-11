@@ -86,7 +86,11 @@ from sklearn.metrics import (
     classification_report,
     accuracy_score
 )
+st.set_page_config(layout='wide', page_title = 'Industrial safety NLP based Chatbot')
+st.set_option('deprecation.showPyplotGlobalUse', False)
 
+
+"""
 nltk.download('punkt')
 nltk.download('omw-1.4')
 nltk.download('stopwords')
@@ -94,10 +98,8 @@ nltk.download('wordnet')
 tqdm.pandas(desc="status")
 spacy.cli.download("en")
 spacy.cli.download("en_core_web_md")
+"""
 
-
-st.set_page_config(layout='wide', page_title = 'Industrial safety NLP based Chatbot')
-st.set_option('deprecation.showPyplotGlobalUse', False)
 
 
 
