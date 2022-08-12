@@ -76,9 +76,6 @@ import tensorflow as tf
 import spacy.cli
 import spacy 
 from keras.models import load_model
-from chatterbot import ChatBot
-from chatterbot.trainers import ListTrainer
-from chatterbot.trainers import ChatterBotCorpusTrainer 
 from streamlit_chat import message 
 import json
 from streamlit_option_menu import option_menu
