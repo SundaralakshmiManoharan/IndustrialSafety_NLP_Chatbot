@@ -92,7 +92,6 @@ spacy.cli.download('en_core_web_md')
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 
-
 from sklearn.metrics import (
     precision_score, 
     recall_score, 
@@ -100,10 +99,6 @@ from sklearn.metrics import (
     classification_report,
     accuracy_score
 )
-
-
-
-
 
 # Setting the image - 
 image = Image.open('images/chta-bot_Blog_3.png')
