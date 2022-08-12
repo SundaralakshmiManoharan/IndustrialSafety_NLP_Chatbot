@@ -80,6 +80,13 @@ from streamlit_chat import message
 import json
 from streamlit_option_menu import option_menu
 from spacy.lang.en.examples import sentences 
+nltk.download('punkt')
+nltk.download('omw-1.4')
+nltk.download('stopwords')
+nltk.download('wordnet')
+tqdm.pandas(desc="status")
+
+
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 
