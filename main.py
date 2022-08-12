@@ -80,7 +80,8 @@ from streamlit_chat import message
 import json
 from streamlit_option_menu import option_menu
 from spacy.lang.en.examples import sentences 
-
+from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.corpus import stopwords
 
 
 from sklearn.metrics import (
