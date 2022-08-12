@@ -1150,9 +1150,9 @@ with st.sidebar:
                                     
                                             # Upsampling strategry using resmapling the dataset
                                                 
-                        else:
-                            st.warning("you need to choose a value to run ML/NN/NLP Classifier")
-                            my_df  = pd.DataFrame()
+                       else:
+                           st.warning("you need to choose a value to run ML/NN/NLP Classifier")
+                           my_df  = pd.DataFrame()
                 
 
                     
