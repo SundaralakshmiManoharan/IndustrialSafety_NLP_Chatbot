@@ -26,3 +26,4 @@ openpyxl==3.0.10
 stop-words==2018.7.23
 chatterbot==1.0.2
 chatterbot-corpus==1.2.0
+streamlit-chat=0.0.2.1
