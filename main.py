@@ -1150,9 +1150,9 @@ with st.sidebar:
                                     
                                             # Upsampling strategry using resmapling the dataset
                                                 
-                       else:
-                           st.warning("you need to choose a value to run ML/NN/NLP Classifier")
-                           my_df  = pd.DataFrame()
+                    else:
+                        st.warning("you need to choose a value to run ML/NN/NLP Classifier")
+                        my_df  = pd.DataFrame()
                 
 
                     
@@ -1226,7 +1226,6 @@ with st.sidebar:
         
                 
                 # Using spacy as text vectorizer and generating embeddings
-               
                 spacy_nlp = spacy.load("en_core_web_md")
                 embeddings_dictionary = dict()
             
@@ -1904,7 +1903,8 @@ with st.sidebar:
               return repsonse
              
             greeting = ["hi", 
-                      "how are you", 
+                        "hello",
+                        "how are you", 
                       "is anyone there", 
                       "hello", 
                       "whats up",
@@ -1954,7 +1954,7 @@ with st.sidebar:
                       "need your help",
                       "need",
                       "issue",
-                      "SOS",
+                      "sos",
                       "help",
                       "incident",
                       "accident"
@@ -1981,6 +1981,7 @@ with st.sidebar:
             
             st.title("PGASS- BOT!!Your Virtual Assistant")
             
+                      
             if 'bot-response' not in st.session_state:
                 st.session_state['bot-response'] = []
 
@@ -2043,3 +2044,5 @@ with st.sidebar:
                     for i in range(len(st.session_state['bot-response'])-1, -1, -1): 
                         message(st.session_state['bot-response'][i], key=str(i))
                         message(st.session_state['user-input'][i], is_user=True, key=str(i) + '_user')
+                    
+            
