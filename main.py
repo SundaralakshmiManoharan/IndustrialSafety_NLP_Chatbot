@@ -1979,7 +1979,7 @@ with st.sidebar:
                       "you are a joke",
                       "useless piece of shit","idiot"]
             
-           
+            st.title("PGASS- BOT!!Your Virtual Assistant")
             
             if 'bot-response' not in st.session_state:
                 st.session_state['bot-response'] = []
