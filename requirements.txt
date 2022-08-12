@@ -25,3 +25,4 @@ xgboost==1.6.1
 openpyxl==3.0.10
 stop-words==2018.7.23
 streamlit-chat==0.0.2.1
+en-core-web-md==3.4.0
