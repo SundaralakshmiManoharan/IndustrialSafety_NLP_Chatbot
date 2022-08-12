@@ -1981,54 +1981,65 @@ with st.sidebar:
             
            
             
-            message("PAGGS-BOT!!!! Your Personal Assistant. If you want to exit, type end \n\n") 
-             # align's the message to the right
-            
-            if 'generated' not in st.session_state:
-                st.session_state['generated'] = []
+            if 'bot-response' not in st.session_state:
+                st.session_state['bot-response'] = []
 
-            if 'past' not in st.session_state:
-                st.session_state['past'] = []
+            if 'user-input' not in st.session_state:
+                st.session_state['user-input'] = []
             
-            user_input = st.text_input("Enter Your Text here")
+            def get_text():
+                input_text = st.text_input("You: ", key="input")
+                return input_text
             
-            user_input = user_input.lower()
+            def query(text):
             
-                                 
-            message(user_input,is_user=True)
+                if len(user_input)>1:
             
-            if len(user_input)>1:
-            
-                if user_input == "end":
-                    message("Thanks for reaching out to us, we wish to serve you better in the future", is_user=False)
+                    if user_input == "end":
+                        bot_response = "Thanks for reaching out to us, we wish to serve you better in the future"
                     
-                elif user_input in greeting:
-                    message("Hello! how can i help you ?", is_user=False)
+                    elif user_input in greeting:
+                        bot_response = "Hello! can I help if there any incident happened in factory?"
+                        
+                    elif user_input in exit_message:
+                        bot_response = "Please call emergency helpline number 1800 900 900 for quick response. I hope I was able to assist you, Good Bye"
                     
-                elif user_input in exit_message:
-                    message("I hope I was able to assist you, Good Bye?", is_user=False)
+                    elif user_input in discussion:
+                        bot_response = "Share incident details, we will ask emergency response team to reach out to you or call emergency helpline number 1800 900 900 for quick response?"
                     
-                elif user_input in discussion:
-                    message("Let us start with your inputs.Please describe more about your problem statement ?", is_user=False)
+                    elif user_input in bot_info:
+                        bot_response = "I am Bot. Your virtual learning assistant ?"
                     
-                elif user_input in bot_info:
-                    message("I am Bot. Your virtual learning assistant ?", is_user=False)
-                    
-                elif user_input in end_convo:
-                    message("Please use respectful words", is_user=False)
+                    elif user_input in end_convo:
+                        bot_response = "Please use respectful words"
     
-                elif len(user_input) >=30:
-                    message(chatbot_response(user_input),is_user=False) 
-                                      
-                   
-                else:
-                    message("Please re-phrase your query to help us understand your issue better", is_user=False)                     
+                    elif len(user_input) >=30:
+                        bot_response = chatbot_response(user_input)
+                              
+                    else:
+                        bot_response = "Please re-phrase your query to help us understand your issue better"                     
                                        
+                              
+                else:
+                    st.warning("Please enter your message to start the conversation")
                     
-                    
-            else:
-                st.warning("Please enter your message to start the conversation")             
+                return bot_response  
              
+            placeholder = st.empty()
+            user_input = get_text()
 
-                    
-            
+            if user_input:
+                output = query(user_input)
+                st.session_state['user-input'].append(user_input)
+                st.session_state['bot-response'].append(output)
+    
+
+            if len(st.session_state['bot-response']) > 3:
+                st.session_state['bot-response'].pop(0)
+                st.session_state['user-input'].pop(0)
+
+            if st.session_state['bot-response']:
+                with placeholder.container():
+                    for i in range(len(st.session_state['bot-response'])-1, -1, -1): 
+                        message(st.session_state['bot-response'][i], key=str(i))
+                        message(st.session_state['user-input'][i], is_user=True, key=str(i) + '_user')
