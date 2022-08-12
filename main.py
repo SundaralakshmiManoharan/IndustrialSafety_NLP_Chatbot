@@ -4,6 +4,10 @@ Spyder Editor
 
 This is a temporary script file.
 """
+# required library
+
+
+
 import streamlit as st
 from sklearn.feature_extraction.text import CountVectorizer
 from nltk.stem.snowball import SnowballStemmer
@@ -72,13 +76,16 @@ import tensorflow as tf
 import spacy.cli
 import spacy 
 from keras.models import load_model
-#from chatterbot import ChatBot
-#from chatterbot.trainers import ListTrainer
-#from chatterbot.trainers import ChatterBotCorpusTrainer 
+from chatterbot import ChatBot
+from chatterbot.trainers import ListTrainer
+from chatterbot.trainers import ChatterBotCorpusTrainer 
+from streamlit_chat import message 
 import json
 from streamlit_option_menu import option_menu
-
 from spacy.lang.en.examples import sentences 
+
+
+
 from sklearn.metrics import (
     precision_score, 
     recall_score, 
@@ -86,25 +93,16 @@ from sklearn.metrics import (
     classification_report,
     accuracy_score
 )
-st.set_page_config(layout='wide', page_title = 'Industrial safety NLP based Chatbot')
-st.set_option('deprecation.showPyplotGlobalUse', False)
 
 
 
-nltk.download('punkt')
-nltk.download('omw-1.4')
-nltk.download('stopwords')
-nltk.download('wordnet')
-tqdm.pandas(desc="status")
-spacy.cli.download("en")
-spacy.cli.download("en_core_web_md")
 
 
 # Setting the image - 
-image = Image.open('images/chatbot.png')
+image = Image.open('images/chta-bot_Blog_3.png')
 
 # Setting the image width -
-st.image(image, use_column_width=False)
+st.image(image, use_column_width=True)
 
 
 # Sidebar navigation for users -
@@ -121,12 +119,14 @@ download = st.container()
 dataset = st.container()
 features = st.container()
 machinelearning_model_training = st.container()
-NN_LSTM_model_training = st.container()
-chat_bot = st.container()
+NN_model_training = st.container()
+LSTM_model_training = st.container()
+classifier_summary = st.container()
+chatbot = st.container()
 
 def process_attributes(df):
     
-        
+       
     # Rename the column names with under score
     df.rename(columns={'Data':'date', 'Countries':'country', 'Genre':'gender', 'Employee or Third Party':'employee type'}, inplace=True)
     df.rename(columns=lambda s: s.lower().replace(' ', '_'), inplace=True)
@@ -158,6 +158,8 @@ def process_attributes(df):
     replace_local = {'Local_01': 1,'Local_02': 2,'Local_03': 3,'Local_04': 4,'Local_05': 5,'Local_06': 6,'Local_07': 7,'Local_08': 8,'Local_09': 9,'Local_10': 10,'Local_11': 11,'Local_12': 12}
     # Mapping Local into the dataframe
     df['local'] = df['local'].map(replace_local)
+    
+    df.drop_duplicates(inplace=True)
     # Delete temporary values because no more used
     del replace_local, replace_accident_level, replace_potential_accident_level
 
@@ -453,13 +455,14 @@ file_location="Data/IHMStefanini_industrial_safety_and_health_database_with_acci
 
 with st.sidebar:
     selected = option_menu(menu_title = 'Main Menu',
-                           options = ["About the Project","Data set introduction","Exploratory Data analysis","NLP Text Pre-Processing","Download Cleansed Data","Machine Learning Classifiers","Neural Network & LSTM Classifier","Chat BOT Assistant"],
+                           options = ["About the Project","Data set introduction","Exploratory Data analysis","NLP Text Pre-Processing","Download Cleansed Data","Machine Learning Classifiers","Neural Network","LSTM Classifier","Classifier Summary & Pickling","Chat BOT Assistant"],
                            default_index = 0)
 
     if selected == "About the Project":
         
         with ProjectInformation:
             st.title("Industrial safety NLP based Chatbot")
+            
             st.header("Domain")
             
             st.write("""
@@ -537,12 +540,14 @@ with st.sidebar:
                     """
         
         # Inject CSS with Markdown
-                st.markdown(hide_table_row_index, unsafe_allow_html=True)
+                #st.markdown(hide_table_row_index, unsafe_allow_html=True)
         
         # Display a static table
                 st.write(df_ind_acc.head(5))
                 st.write('Total Number of Rows:', df_ind_acc.shape[0])
                 st.write('Total Number of Columns:', df_ind_acc.shape[1])
+                
+
         
         ################Data Pre-Processing############################################        
                 
@@ -554,6 +559,18 @@ with st.sidebar:
                 st.write(df_ind_acc.head())
                 st.write('Total Number of Rows:', df_ind_acc.shape[0])
                 st.write('Total Number of Columns:', df_ind_acc.shape[1])  
+                
+                st.header("Data Cleanup: Summary")
+            
+                st.write("""
+                <p style='text-align: justify;'>
+                ✅ Column conversion - Converted the Date column to datetime type
+                
+                ✅ Check for missing values - No missing values found
+                
+                ✅ Check for duplicate value - Found 7 duplicate rows, deleted duplicate rows
+             </p>
+                """, unsafe_allow_html=True)
         
         
         ################MText Pre- Processing############################################      
@@ -565,6 +582,25 @@ with st.sidebar:
                 st.write(df_ind_acc.head())
                 st.write('Total Number of Rows:', df_ind_acc.shape[0])
                 st.write('Total Number of Columns:', df_ind_acc.shape[1])
+                
+                st.header("Data Cleanup: Summary")
+            
+                st.write("""
+                <p style='text-align: justify;'>
+                ✅ Remove unused column - Unnamed: 0
+                
+                ✅ Rename column name - renamed column to make it uniformed and easy to refer
+                
+                ✅ Convert values to standard format - Converted category values of Local, Accident Level and Potential Accident Level
+                
+                ✅ Creating on new feature - New features created from date like, day, month, week, week of year, quarter and year
+                
+                ✅ Description NLP preprocessing like converting to lower case,lemmantization,removing stop words including domain specific,remove dates,time,special character etc                              
+                    
+
+             </p>
+                """, unsafe_allow_html=True)
+        
         
             else:
                 st.warning("you need to upload a csv or excel file.")
@@ -811,9 +847,24 @@ with st.sidebar:
             df_ind_acc.pop("Unnamed: 0")
             df_ind_acc = process_attributes(df_ind_acc)
             df_ind_acc['description_processed'] = df_ind_acc["description"].apply(preprocess_text)
-
- 
             
+            col1, col2 = st.columns(2)
+            
+            with col1:          
+                st.header("Words in description")
+                image = Image.open('images/Words_Description.png')
+                st.image(image, use_column_width=True)
+                
+            with col2:          
+                st.header("Average Word Length")
+                image = Image.open('images/WordLength.png')
+                st.image(image, use_column_width=True)
+                
+                    
+            st.header("Top ngrams")
+            image = Image.open('images/bigrams.png')
+            st.image(image, use_column_width=True)
+
                 
             st.header("Word Cloud")
             wordcloud = WordCloud(width = 1500, height = 800, random_state=0, background_color='black', colormap='rainbow', \
@@ -881,7 +932,7 @@ with st.sidebar:
         
 
         with machinelearning_model_training:
-                    st.title("Training my model")   
+                    st.title("Machine Learning Classifiers")   
             
                     genre = st.radio(
              "Do you want to use the Existing Cleansed or upload a new data for analysis",
@@ -1110,13 +1161,13 @@ with st.sidebar:
                 
 
 
-    elif selected == "Neural Network & LSTM Classifier":   
-        with NN_LSTM_model_training:
-            st.title("Neural Network & LSTM Classifier")
+    elif selected == "Neural Network":   
+        with NN_model_training:
+            st.title("Neural Network")
             
             genre1 = st.radio(
              "Do you want to use the Existing Cleansed or upload a new data for analysis of NN/LSTM Classifier",
-             ('Do not want to run NN or LSTM Model','Yes', 'No'))
+             ('Do not want to run NN Model','Yes', 'No'))
             
                 
             if genre1 == 'Yes':      
@@ -1250,47 +1301,6 @@ with st.sidebar:
                 st.subheader('Recall Score of the Model is:')
                 st.write(model_metrics_nn["recall"]*100)
                 
-                st.title("LSTM")
-                
-                # create LSTM classifier
-
-            
-                model_lstm = glove_lstm(embedding_matrix, length_long_sentence, y_train.shape[1])
-                model_lstm.summary()
-                
-                st.subheader('Bidirectional LSTM:')
-                # Setting the image - 
-                image = Image.open('images/Bidirectional_LSTM.png')
-            
-                # Setting the image width -
-                st.image(image, use_column_width=False)
-                
-                n_epochs=50
-                n_splits = 3
-                scores_lstm = mutlilable_cross_val(model_lstm, X_train_vec, y_train, X_test_vec, y_test, n_epochs=n_epochs, callbacks= [reduce_lr, checkpoint_lstm, stop], verbose=1)
-                
-                BATCH_SIZE = 1024
-                baseline_results = model_lstm.evaluate(X_test_vec, y_test, batch_size=BATCH_SIZE, verbose=0)
-                model_metrics_lstm = dict()
-                for name, value in zip(model_lstm.metrics_names, baseline_results):
-                    model_metrics_lstm[name] = value
-                model_metrics_lstm["F1"] = f1_metric(model_metrics_lstm["precision"], model_metrics_lstm["recall"])
-                
-                st.subheader('Accuracy Score of the Model is:')
-                st.write(model_metrics_lstm["accuracy"]*100)
-                st.subheader('F1 Score of the Model is:')
-                st.write(model_metrics_lstm["F1"]*100)
-                st.subheader('Precision Score of the Model is:')
-                st.write(model_metrics_lstm["precision"]*100)
-                st.subheader('Recall Score of the Model is:')
-                st.write(model_metrics_lstm["recall"]*100)    
-                
-                
-                #st.header("Save the Pickle File")
-                # Save the weights
-                model_lstm.save_weights('lstm_model.h5')
-                model_lstm.save('lstm_model.h5')
-                st.title("Pickle file has been saved in the name lstm_model.h5 to the source directory")
         
             elif genre1 == 'No':
                 
@@ -1421,6 +1431,239 @@ with st.sidebar:
                     st.subheader('Recall Score of the Model is:')
                     st.write(model_metrics_nn["recall"]*100)
                     
+        
+            else:
+                st.warning("you need to choose a value to run NN Classifier")
+                my_df  = pd.DataFrame()
+                
+    elif selected == "LSTM Classifier":   
+        with LSTM_model_training:
+            st.title("LSTM Classifier")
+            
+            genre1 = st.radio(
+             "Do you want to use the Existing Cleansed or upload a new data for analysis of NN/LSTM Classifier",
+             ('Do not want to run LSTM Model','Yes', 'No'))
+            
+                
+            if genre1 == 'Yes':      
+                
+                df_ind_acc = pd.read_excel(file_location)
+                df_ind_acc.pop("Unnamed: 0")
+                df_ind_acc = process_attributes(df_ind_acc)
+                df_ind_acc['description_processed'] = df_ind_acc["description"].apply(preprocess_text)
+                
+                df_minority_sampled = pd.DataFrame()
+                df_majority =  df_ind_acc[df_ind_acc["critical_risk"] =='Others']
+        
+                UPSAMPLEPCT = .1
+                SEED = 45 
+        
+                for risk in df_ind_acc[df_ind_acc["critical_risk"] !='Others']["critical_risk"].unique():
+                    GrpDF = df_ind_acc[df_ind_acc["critical_risk"] == risk]
+                    resampled = resample(GrpDF, replace=True, n_samples=int(UPSAMPLEPCT * df_majority.shape[0]/(1-UPSAMPLEPCT)), random_state=SEED)
+                    df_minority_sampled = df_minority_sampled.append(resampled)
+        
+                df_upsampled = pd.concat([df_majority, df_minority_sampled])
+        
+        # Shuffle all the samples
+                df_upsampled = resample(df_upsampled, replace=False, random_state=SEED)
+                
+               
+                X= df_upsampled.description_processed
+                y= df_upsampled.apply(lambda col : [col["critical_risk"], col["potential_accident_level"]],axis =1)
+                
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state=90)
+                
+                label_counts=dict()
+        
+                for labels in y.values:
+                    for label in labels:
+                        if label in label_counts:
+                            label_counts[str(label)]+=1
+                        else:
+                            label_counts[str(label)]=1
+                            
+                # Transform between iterable of iterables and a multilabel format
+                binarizer=MultiLabelBinarizer(classes=sorted(label_counts.keys()))
+        
+                y_train = binarizer.fit_transform(y_train)
+                y_test = binarizer.transform(y_test)
+                
+           
+                word_tokenizer = Tokenizer()
+                word_tokenizer.fit_on_texts(X)
+                num_tokens = len(word_tokenizer.word_index) + 1
+                
+                longest_train = max(X, key=lambda sentence: len(word_tokenize(sentence)))
+                length_long_sentence = len(word_tokenize(longest_train))
+            
+               
+                # Using spacy as text vectorizer and generating embeddings
+                spacy_nlp = spacy.load("en_core_web_md")
+                embeddings_dictionary = dict()
+            
+                embedding_dim = len(spacy_nlp('The').vector)
+                embedding_matrix = np.zeros((num_tokens, embedding_dim))
+                for word, index in tqdm(word_tokenizer.word_index.items()):
+                    embedding_matrix[index] = spacy_nlp(str(word)).vector
+            
+                #embedding_matrix.shape[0], num_tokens
+                
+                # Getting distinct labels
+                label_counts=dict()
+            
+                for labels in y.values:
+                    for label in labels:
+                        if label in label_counts:
+                            label_counts[str(label)]+=1
+                        else:
+                            label_counts[str(label)]=1
+            
+                X= df_upsampled.description_processed
+                y= df_upsampled.apply(lambda col : [col["critical_risk"], col["potential_accident_level"]],axis =1)
+                
+                X_train, X_test, y_train, y_test = train_test_split( X, y, test_size=0.25)
+                
+                # using MultiLabelBinarizer for encoding 
+                binarizer=MultiLabelBinarizer(classes=sorted(label_counts.keys()))
+            
+                X_train_vec = pad_sequences( embed(X_train), length_long_sentence, padding='post')
+                X_test_vec = pad_sequences( embed(X_test), length_long_sentence, padding='post')
+            
+                y_train = binarizer.fit_transform(y_train)
+                y_test = binarizer.transform(y_test)
+            
+                n_outputs = y_train.shape[1]
+              
+                st.title("LSTM")
+                
+                # create LSTM classifier
+
+            
+                model_lstm = glove_lstm(embedding_matrix, length_long_sentence, y_train.shape[1])
+                model_lstm.summary()
+                
+                st.subheader('Bidirectional LSTM:')
+                # Setting the image - 
+                image = Image.open('images/Bidirectional_LSTM.png')
+            
+                # Setting the image width -
+                st.image(image, use_column_width=False)
+                
+                n_epochs=50
+                n_splits = 3
+                scores_lstm = mutlilable_cross_val(model_lstm, X_train_vec, y_train, X_test_vec, y_test, n_epochs=n_epochs, callbacks= [reduce_lr, checkpoint_lstm, stop], verbose=1)
+                
+                BATCH_SIZE = 1024
+                baseline_results = model_lstm.evaluate(X_test_vec, y_test, batch_size=BATCH_SIZE, verbose=0)
+                model_metrics_lstm = dict()
+                for name, value in zip(model_lstm.metrics_names, baseline_results):
+                    model_metrics_lstm[name] = value
+                model_metrics_lstm["F1"] = f1_metric(model_metrics_lstm["precision"], model_metrics_lstm["recall"])
+                
+                st.subheader('Accuracy Score of the Model is:')
+                st.write(model_metrics_lstm["accuracy"]*100)
+                st.subheader('F1 Score of the Model is:')
+                st.write(model_metrics_lstm["F1"]*100)
+                st.subheader('Precision Score of the Model is:')
+                st.write(model_metrics_lstm["precision"]*100)
+                st.subheader('Recall Score of the Model is:')
+                st.write(model_metrics_lstm["recall"]*100)    
+                
+                
+            elif genre1 == 'No':
+                
+                st.title("Upload Cleansed Data")
+                spectra = st.file_uploader("upload file", type={"csv", "txt"})
+                if spectra is not None:
+                    df_ind_acc = pd.read_csv(spectra)
+                    st.write(df_ind_acc.head())
+                    st.write('Total Number of Rows:', df_ind_acc.shape[0])
+                    st.write('Total Number of Columns:', df_ind_acc.shape[1])
+                    
+                    df_minority_sampled = pd.DataFrame()
+                    df_majority =  df_ind_acc[df_ind_acc["critical_risk"] =='Others']
+            
+                    UPSAMPLEPCT = .1
+                    SEED = 45 
+            
+                    for risk in df_ind_acc[df_ind_acc["critical_risk"] !='Others']["critical_risk"].unique():
+                        GrpDF = df_ind_acc[df_ind_acc["critical_risk"] == risk]
+                        resampled = resample(GrpDF, replace=True, n_samples=int(UPSAMPLEPCT * df_majority.shape[0]/(1-UPSAMPLEPCT)), random_state=SEED)
+                        df_minority_sampled = df_minority_sampled.append(resampled)
+            
+                    df_upsampled = pd.concat([df_majority, df_minority_sampled])
+            
+            # Shuffle all the samples
+                    df_upsampled = resample(df_upsampled, replace=False, random_state=SEED)
+                    
+                   
+                    X= df_upsampled.description_processed
+                    y= df_upsampled.apply(lambda col : [col["critical_risk"], col["potential_accident_level"]],axis =1)
+                    
+                    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state=90)
+                    
+                    label_counts=dict()
+            
+                    for labels in y.values:
+                        for label in labels:
+                            if label in label_counts:
+                                label_counts[str(label)]+=1
+                            else:
+                                label_counts[str(label)]=1
+                                
+                    # Transform between iterable of iterables and a multilabel format
+                    binarizer=MultiLabelBinarizer(classes=sorted(label_counts.keys()))
+            
+                    y_train = binarizer.fit_transform(y_train)
+                    y_test = binarizer.transform(y_test)
+                    
+               
+                    word_tokenizer = Tokenizer()
+                    word_tokenizer.fit_on_texts(X)
+                    num_tokens = len(word_tokenizer.word_index) + 1
+                    
+                    longest_train = max(X, key=lambda sentence: len(word_tokenize(sentence)))
+                    length_long_sentence = len(word_tokenize(longest_train))
+                
+                   
+                    # Using spacy as text vectorizer and generating embeddings
+                    spacy_nlp = spacy.load("en_core_web_md")
+                    embeddings_dictionary = dict()
+                
+                    embedding_dim = len(spacy_nlp('The').vector)
+                    embedding_matrix = np.zeros((num_tokens, embedding_dim))
+                    for word, index in tqdm(word_tokenizer.word_index.items()):
+                        embedding_matrix[index] = spacy_nlp(str(word)).vector
+                
+                    #embedding_matrix.shape[0], num_tokens
+                    
+                    # Getting distinct labels
+                    label_counts=dict()
+                
+                    for labels in y.values:
+                        for label in labels:
+                            if label in label_counts:
+                                label_counts[str(label)]+=1
+                            else:
+                                label_counts[str(label)]=1
+                
+                    X= df_upsampled.description_processed
+                    y= df_upsampled.apply(lambda col : [col["critical_risk"], col["potential_accident_level"]],axis =1)
+                    
+                    X_train, X_test, y_train, y_test = train_test_split( X, y, test_size=0.25)
+                    
+                    # using MultiLabelBinarizer for encoding 
+                    binarizer=MultiLabelBinarizer(classes=sorted(label_counts.keys()))
+                
+                    X_train_vec = pad_sequences( embed(X_train), length_long_sentence, padding='post')
+                    X_test_vec = pad_sequences( embed(X_test), length_long_sentence, padding='post')
+                
+                    y_train = binarizer.fit_transform(y_train)
+                    y_test = binarizer.transform(y_test)
+                
+                    n_outputs = y_train.shape[1]
+                  
                     st.title("LSTM")
                 
                     model_lstm = glove_lstm(embedding_matrix, length_long_sentence, y_train.shape[1])
@@ -1454,58 +1697,52 @@ with st.sidebar:
                     st.write(model_metrics_lstm["recall"]*100)    
                     
                     
-                    #st.header("Save the Pickle File")
-                    # Save the weights
-                    model_lstm.save_weights('lstm_model.h5')
-                    model_lstm.save('lstm_model.h5')
-                    st.title("Pickle file has been saved in the name lstm_model.h5 to the source directory")
+
         
             else:
-                st.warning("you need to choose a value to run NN or LSTM Classifier")
+                st.warning("you need to choose a value to run LSTM Classifier")
                 my_df  = pd.DataFrame()
-        
-    elif selected == "Chat BOT Assistant": 
-
-        with chat_bot:
-                st.title("Bot: This is Bot! Your Personal Assistant. If you want to exit, type end \n\n")  
                 
-                           
+    elif selected == "Classifier Summary & Pickling": 
+        with classifier_summary:
+            
+            st.header("Summary of all Classifiers")
+            image = Image.open('images/Summary.png')
+            st.image(image, use_column_width=False)
+            st.title("Based on above metric we are choosing LSTM classifier for as a final model and pickle it")
+                     
+
+            
+            if st.button('Do you want to pickle the final model: Then click me'):
                 df_ind_acc = pd.read_excel(file_location)
                 df_ind_acc.pop("Unnamed: 0")
                 df_ind_acc = process_attributes(df_ind_acc)
                 df_ind_acc['description_processed'] = df_ind_acc["description"].apply(preprocess_text)
-        
-        
-        # load the saved model file
-                new_model = tf.keras.models.load_model('lstm_model - Copy.h5')
                 
                 df_minority_sampled = pd.DataFrame()
                 df_majority =  df_ind_acc[df_ind_acc["critical_risk"] =='Others']
-            
+        
                 UPSAMPLEPCT = .1
                 SEED = 45 
-            
+        
                 for risk in df_ind_acc[df_ind_acc["critical_risk"] !='Others']["critical_risk"].unique():
                     GrpDF = df_ind_acc[df_ind_acc["critical_risk"] == risk]
                     resampled = resample(GrpDF, replace=True, n_samples=int(UPSAMPLEPCT * df_majority.shape[0]/(1-UPSAMPLEPCT)), random_state=SEED)
                     df_minority_sampled = df_minority_sampled.append(resampled)
-            
+        
                 df_upsampled = pd.concat([df_majority, df_minority_sampled])
-            
-            # Shuffle all the samples
+        
+        # Shuffle all the samples
                 df_upsampled = resample(df_upsampled, replace=False, random_state=SEED)
                 
                
                 X= df_upsampled.description_processed
                 y= df_upsampled.apply(lambda col : [col["critical_risk"], col["potential_accident_level"]],axis =1)
                 
-                potential_accident_level = df_upsampled.potential_accident_level.unique()
-                critical_risk = df_upsampled.critical_risk.unique()
-                
                 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state=90)
                 
                 label_counts=dict()
-            
+        
                 for labels in y.values:
                     for label in labels:
                         if label in label_counts:
@@ -1515,12 +1752,11 @@ with st.sidebar:
                             
                 # Transform between iterable of iterables and a multilabel format
                 binarizer=MultiLabelBinarizer(classes=sorted(label_counts.keys()))
-            
+        
                 y_train = binarizer.fit_transform(y_train)
                 y_test = binarizer.transform(y_test)
-            #pickled_binarizer = pickle.load(open('binarizer.pkl', 'rb'))
-            
-                         
+                
+           
                 word_tokenizer = Tokenizer()
                 word_tokenizer.fit_on_texts(X)
                 num_tokens = len(word_tokenizer.word_index) + 1
@@ -1528,57 +1764,270 @@ with st.sidebar:
                 longest_train = max(X, key=lambda sentence: len(word_tokenize(sentence)))
                 length_long_sentence = len(word_tokenize(longest_train))
             
-                
-                # Bot response based on user inputs, predict the potential accident level and critical risk
-                def chatbot_response(input_txt):
-                  pred_acc_lvl, pred_critical_risk = predict_potential_accident_level(input_txt, new_model, binarizer)
-                  repsonse = "Based on your inputs seems like incident belong to "
-                
-                  if pred_acc_lvl != "":
-                    repsonse += "accident level '" + pred_acc_lvl  + "'"
-                
-                  #checking response length  
-                  rsp_len = len(repsonse)
-                  
-                  if pred_critical_risk != "":
-                    repsonse += " and " if rsp_len > 51 else "" 
-                    repsonse += "critical risk category '" + pred_critical_risk + "'"
-                  return repsonse
-                
-                
-                # function to start the chat bot which will continue till the user type 'end'
-                
-                   
-                   
-                #text = "At a time when a worker and another partner were preparing to move an oil cylinder (55 gallons) on a mobile platform mounted on rails (platform weighing approximately 200 kg) it is derailed (leaves the rail). In order to place the platform on the rail, both workers lift the platform and in those instants the right hand of one of them is trapped between the rail and the platform structure where it was held (metallic tube protruding from the platform). This accident caused a bruised wound on the index finger of the right hand, there was no fracture. At the time of the accident they both wore leather-type safety gloves."
-                user_input = st.text_input('Please enter your problem description in the below edit box for us to highlight the safety risk as per the incident description')
-                user_input = user_input.lower()
-             
-             
-                
-                if user_input.lower()=="end":
-                    st.write("Thanks for your response, we wish to serve you better in the future")
-                elif len(user_input) <=30:
-                    st.write("Please re-phrase your query!")
-                else:
-                    st.header("PAGGS-Bot response is as below:")
-                    st.write(chatbot_response(user_input))  
-    
-
-    
-
-
-
-
-    
-    
-
-
-        
                
-        
-  
-        
+                # Using spacy as text vectorizer and generating embeddings
+                spacy_nlp = spacy.load("en_core_web_md")
+                embeddings_dictionary = dict()
+            
+                embedding_dim = len(spacy_nlp('The').vector)
+                embedding_matrix = np.zeros((num_tokens, embedding_dim))
+                for word, index in tqdm(word_tokenizer.word_index.items()):
+                    embedding_matrix[index] = spacy_nlp(str(word)).vector
+            
+                #embedding_matrix.shape[0], num_tokens
+                
+                # Getting distinct labels
+                label_counts=dict()
+            
+                for labels in y.values:
+                    for label in labels:
+                        if label in label_counts:
+                            label_counts[str(label)]+=1
+                        else:
+                            label_counts[str(label)]=1
+            
+                X= df_upsampled.description_processed
+                y= df_upsampled.apply(lambda col : [col["critical_risk"], col["potential_accident_level"]],axis =1)
+                
+                X_train, X_test, y_train, y_test = train_test_split( X, y, test_size=0.25)
+                
+                # using MultiLabelBinarizer for encoding 
+                binarizer=MultiLabelBinarizer(classes=sorted(label_counts.keys()))
+            
+                X_train_vec = pad_sequences( embed(X_train), length_long_sentence, padding='post')
+                X_test_vec = pad_sequences( embed(X_test), length_long_sentence, padding='post')
+            
+                y_train = binarizer.fit_transform(y_train)
+                y_test = binarizer.transform(y_test)
+            
+                n_outputs = y_train.shape[1]
+              
+               # create LSTM classifier
+    
+            
+                model_lstm = glove_lstm(embedding_matrix, length_long_sentence, y_train.shape[1])
+                model_lstm.summary()
+                
+               
+                n_epochs=50
+                n_splits = 3
+                scores_lstm = mutlilable_cross_val(model_lstm, X_train_vec, y_train, X_test_vec, y_test, n_epochs=n_epochs, callbacks= [reduce_lr, checkpoint_lstm, stop], verbose=1)
+                
+                BATCH_SIZE = 1024
+                baseline_results = model_lstm.evaluate(X_test_vec, y_test, batch_size=BATCH_SIZE, verbose=0)
+                
+                                    #st.header("Save the Pickle File")
+                        # Save the weights
+                model_lstm.save_weights('lstm_model.h5')
+                model_lstm.save('lstm_model.h5')
+                st.write("Pickle file has been saved in the name lstm_model.h5 to the source directory")
 
+            
         
+                    
+    elif selected == "Chat BOT Assistant": 
+        with chatbot:
 
+            df_ind_acc = pd.read_excel(file_location)
+            df_ind_acc.pop("Unnamed: 0")
+            df_ind_acc = process_attributes(df_ind_acc)
+            df_ind_acc['description_processed'] = df_ind_acc["description"].apply(preprocess_text)
+    
+    
+    # load the saved model file
+            new_model = tf.keras.models.load_model('lstm_model - Copy.h5')
+            
+            df_minority_sampled = pd.DataFrame()
+            df_majority =  df_ind_acc[df_ind_acc["critical_risk"] =='Others']
+        
+            UPSAMPLEPCT = .1
+            SEED = 45 
+        
+            for risk in df_ind_acc[df_ind_acc["critical_risk"] !='Others']["critical_risk"].unique():
+                GrpDF = df_ind_acc[df_ind_acc["critical_risk"] == risk]
+                resampled = resample(GrpDF, replace=True, n_samples=int(UPSAMPLEPCT * df_majority.shape[0]/(1-UPSAMPLEPCT)), random_state=SEED)
+                df_minority_sampled = df_minority_sampled.append(resampled)
+        
+            df_upsampled = pd.concat([df_majority, df_minority_sampled])
+        
+        # Shuffle all the samples
+            df_upsampled = resample(df_upsampled, replace=False, random_state=SEED)
+            
+           
+            X= df_upsampled.description_processed
+            y= df_upsampled.apply(lambda col : [col["critical_risk"], col["potential_accident_level"]],axis =1)
+            
+            potential_accident_level = df_upsampled.potential_accident_level.unique()
+            critical_risk = df_upsampled.critical_risk.unique()
+            
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state=90)
+            
+            label_counts=dict()
+        
+            for labels in y.values:
+                for label in labels:
+                    if label in label_counts:
+                        label_counts[str(label)]+=1
+                    else:
+                        label_counts[str(label)]=1
+                        
+            # Transform between iterable of iterables and a multilabel format
+            binarizer=MultiLabelBinarizer(classes=sorted(label_counts.keys()))
+        
+            y_train = binarizer.fit_transform(y_train)
+            y_test = binarizer.transform(y_test)
+        #pickled_binarizer = pickle.load(open('binarizer.pkl', 'rb'))
+        
+                     
+            word_tokenizer = Tokenizer()
+            word_tokenizer.fit_on_texts(X)
+            num_tokens = len(word_tokenizer.word_index) + 1
+            
+            longest_train = max(X, key=lambda sentence: len(word_tokenize(sentence)))
+            length_long_sentence = len(word_tokenize(longest_train))
+        
+            
+            # Bot response based on user inputs, predict the potential accident level and critical risk
+            def chatbot_response(input_txt):
+              pred_acc_lvl, pred_critical_risk = predict_potential_accident_level(input_txt, new_model, binarizer)
+              repsonse = "Based on your inputs seems like incident belong to "
+            
+              if pred_acc_lvl != "":
+                repsonse += "accident level '" + pred_acc_lvl  + "'"            
+               
+              rsp_len = len(repsonse)
+              
+              if pred_critical_risk != "":
+                repsonse += " and " if rsp_len > 51 else "" 
+                repsonse += "critical risk category '" + pred_critical_risk + "'"
+              return repsonse
+             
+            greeting = ["hi", 
+                      "how are you", 
+                      "is anyone there", 
+                      "hello", 
+                      "whats up",
+                      "hey",
+                      "yo",
+                      "listen", 
+                      "please help me",
+                      "i am learner from",
+                      "i belong to",
+                      "aiml batch",
+                      "aifl batch",
+                      "i am from",
+                      "my pm is",
+                      "blended",
+                      "online",
+                      "i am from",
+                      "hey ya",
+                      "talking to you for first time"]
+            
+            exit_message = ["thank you", 
+                      "thanks", 
+                      "cya",
+                      "see you",
+                      "later", 
+                      "see you later", 
+                      "goodbye", 
+                      "i am leaving", 
+                      "have a Good day",
+                      "you helped me",
+                      "thanks a lot",
+                      "thanks a ton",
+                      "you are the best",
+                      "great help",
+                      "too good",
+                      "bye",
+                      "you are a good learning buddy"]
+            
+            
+            discussion = ["problem",
+                      "i have a problem to discuss",
+                      "i want to discuss a problem",
+                      "tell me about potential accident level",
+                      "want to tell you the problem",
+                      "can we start to discuss the problem",
+                      "discuss",
+                      "help",
+                      "need your help",
+                      "need",
+                      "issue",
+                      "SOS",
+                      "help",
+                      "incident",
+                      "accident"
+                      ]
+            
+            bot_info = ["what is your name",
+                      "who are you",
+                      "name please",
+                      "when are your hours of opertions", 
+                      "what are your working hours", 
+                      "hours of operation",
+                      "working hours",
+                      "hours"]
+            
+            end_convo = ["what the hell",
+                      "bloody stupid bot",
+                      "do you think you are very smart",
+                      "screw you", 
+                      "i hate you", 
+                      "you are stupid",
+                      "jerk",
+                      "you are a joke",
+                      "useless piece of shit","idiot"]
+            
+           
+            
+            message("PAGGS-BOT!!!! Your Personal Assistant. If you want to exit, type end \n\n") 
+             # align's the message to the right
+            
+            if 'generated' not in st.session_state:
+                st.session_state['generated'] = []
+
+            if 'past' not in st.session_state:
+                st.session_state['past'] = []
+            
+            user_input = st.text_input("Enter Your Text here")
+            
+            user_input = user_input.lower()
+            
+                                 
+            message(user_input,is_user=True)
+            
+            if len(user_input)>1:
+            
+                if user_input == "end":
+                    message("Thanks for reaching out to us, we wish to serve you better in the future", is_user=False)
+                    
+                elif user_input in greeting:
+                    message("Hello! how can i help you ?", is_user=False)
+                    
+                elif user_input in exit_message:
+                    message("I hope I was able to assist you, Good Bye?", is_user=False)
+                    
+                elif user_input in discussion:
+                    message("Let us start with your inputs.Please describe more about your problem statement ?", is_user=False)
+                    
+                elif user_input in bot_info:
+                    message("I am Bot. Your virtual learning assistant ?", is_user=False)
+                    
+                elif user_input in end_convo:
+                    message("Please use respectful words", is_user=False)
+    
+                elif len(user_input) >=30:
+                    message(chatbot_response(user_input),is_user=False) 
+                                      
+                   
+                else:
+                    message("Please re-phrase your query to help us understand your issue better", is_user=False)                     
+                                       
+                    
+                    
+            else:
+                st.warning("Please enter your message to start the conversation")             
+             
+
+                    
+            
