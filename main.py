@@ -85,7 +85,7 @@ nltk.download('omw-1.4')
 nltk.download('stopwords')
 nltk.download('wordnet')
 tqdm.pandas(desc="status")
-
+python -m spacy download en_core_web_md
 
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
