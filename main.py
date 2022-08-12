@@ -1226,7 +1226,7 @@ with st.sidebar:
         
                 
                 # Using spacy as text vectorizer and generating embeddings
-                @st.cache
+               
                 spacy_nlp = spacy.load("en_core_web_md")
                 embeddings_dictionary = dict()
             
