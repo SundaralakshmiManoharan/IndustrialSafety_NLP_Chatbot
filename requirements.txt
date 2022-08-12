@@ -24,5 +24,5 @@ wordcloud==1.8.2.2
 xgboost==1.6.1
 openpyxl==3.0.10
 stop-words==2018.7.23
-chatterbot==1.0.2
+chatterbot==1.0.7
 chatterbot-corpus==1.2.0
