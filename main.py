@@ -85,8 +85,6 @@ nltk.download('omw-1.4')
 nltk.download('stopwords')
 nltk.download('wordnet')
 tqdm.pandas(desc="status")
-
-@st.cache
 spacy.cli.download('en_core_web_md')
 
 from nltk.tokenize import sent_tokenize, word_tokenize
