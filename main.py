@@ -76,19 +76,16 @@ import tensorflow as tf
 import spacy.cli
 import spacy 
 from keras.models import load_model
+#from chatterbot import ChatBot
+#from chatterbot.trainers import ListTrainer
+#from chatterbot.trainers import ChatterBotCorpusTrainer 
 from streamlit_chat import message 
 import json
 from streamlit_option_menu import option_menu
 from spacy.lang.en.examples import sentences 
-nltk.download('punkt')
-nltk.download('omw-1.4')
-nltk.download('stopwords')
-nltk.download('wordnet')
-tqdm.pandas(desc="status")
-spacy.cli.download('en_core_web_md')
-
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
+
 
 from sklearn.metrics import (
     precision_score, 
@@ -97,6 +94,18 @@ from sklearn.metrics import (
     classification_report,
     accuracy_score
 )
+
+@st.cache(show_spinner=False)
+def download_library():    
+    nltk.download('punkt')
+    nltk.download('omw-1.4')
+    nltk.download('stopwords')
+    nltk.download('wordnet')
+    tqdm.pandas(desc="status")
+    spacy.cli.download('en_core_web_md')
+                      
+
+
 
 # Setting the image - 
 image = Image.open('images/chta-bot_Blog_3.png')
@@ -462,6 +471,10 @@ with st.sidebar:
         
         with ProjectInformation:
             st.title("Industrial safety NLP based Chatbot")
+            
+            with st.spinner("Wait for download to complete"):
+                download_library()
+            st.success("Download successful")
             
             st.header("Domain")
             
@@ -2033,7 +2046,7 @@ with st.sidebar:
                 output = query(user_input)
                 st.session_state['user-input'].append(user_input)
                 st.session_state['bot-response'].append(output)
-    
+
 
             if len(st.session_state['bot-response']) > 3:
                 st.session_state['bot-response'].pop(0)
@@ -2041,8 +2054,9 @@ with st.sidebar:
 
             if st.session_state['bot-response']:
                 with placeholder.container():
-                    for i in range(len(st.session_state['bot-response'])-1, -1, -1): 
+                    for i in range(len(st.session_state['bot-response'])): 
+                        message(st.session_state['user-input'][i],avatar_style="miniavs", seed=18, is_user=True, key=str(i) + '_user')
                         message(st.session_state['bot-response'][i], avatar_style="bottts", seed=12,key=str(i))
-                        message(st.session_state['user-input'][i], avatar_style="miniavs", seed=18,is_user=True, key=str(i) + '_user')
+                        
                     
             
