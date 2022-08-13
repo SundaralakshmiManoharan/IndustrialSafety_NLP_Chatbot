@@ -2042,7 +2042,7 @@ with st.sidebar:
             if st.session_state['bot-response']:
                 with placeholder.container():
                     for i in range(len(st.session_state['bot-response'])-1, -1, -1): 
-                        message(st.session_state['bot-response'][i], key=str(i))
-                        message(st.session_state['user-input'][i], is_user=True, key=str(i) + '_user')
+                        message(st.session_state['bot-response'][i], avatar_style="bottts", seed=12,key=str(i))
+                        message(st.session_state['user-input'][i], avatar_style="miniavs", seed=18,is_user=True, key=str(i) + '_user')
                     
             
